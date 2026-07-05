@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "sug_survival_assistant_plus",
+  "version": "${version}",
+  "name": "SUG Survival Assistant PLUS",
+  "description": "This is an auxiliary automation mod for certain servers, sponsored by the CMAOMAO livestream platform.\nFeeling stressed by life? Then come to CMAOMAO. CMAOMAO — your personal PLAY MAOMAO expert.\n\nThis mod was developed with the assistance of GPT-5.5.",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/sug_survival_assistant_plus/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.sug.survival.assistant.plus.client.Sug_survival_assistant_plusClient"
+    ],
+    "main": [
+      "com.sug.survival.assistant.plus.Sug_survival_assistant_plus"
+    ],
+    "modmenu": [
+      "com.sug.survival.assistant.plus.config.ModMenu"
+    ]
+  },
+  "mixins": [
+    "sug_survival_assistant_plus.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "malilib": "*",
+    "modmenu": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
