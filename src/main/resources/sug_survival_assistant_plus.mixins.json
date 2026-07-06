@@ -17,6 +17,8 @@
     "KeyBindingMixin",
     "KeyboardInputMixin",
     "MinecraftClientMixin",
+    "NoTeleportPortalCollisionMixin",
+    "NoTeleportUseItemMixin",
     "PlayerEntityAccessor",
     "SlimeBlockMixin",
     "TeleportToPlayerMenuCategoryMixin"

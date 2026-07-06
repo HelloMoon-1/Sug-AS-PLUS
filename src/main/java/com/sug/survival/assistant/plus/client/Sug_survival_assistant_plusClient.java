@@ -36,6 +36,7 @@ public class Sug_survival_assistant_plusClient implements ClientModInitializer {
             ticks++;
             ShulkerRestock.tick(client);
             SilentUseHotkeys.tick(client);
+            NoTeleport.tick(client);
             Freecam.tick(client);
             HaoQiChongTian.tick(client);
             AutoEat.tick(client);

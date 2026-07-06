@@ -35,6 +35,7 @@ public class Configs implements IConfigHandler {
     public static final ConfigBooleanHotkeyed HAO_QI_CHONG_TIAN = new ConfigBooleanHotkeyed("豪气冲天", false, "", "在空中循环定身、播放 JH 片段并旋转第三人称视角");
 
     public static final ConfigBooleanHotkeyed NO_SLOW = new ConfigBooleanHotkeyed("无减速", false, "", "禁用粘液块移动减速");
+    public static final ConfigBooleanHotkeyed NO_TELEPORT = new ConfigBooleanHotkeyed("防传送", false, "", "使下界传送门在客户端有碰撞，并阻止可能飞入传送门的末影珍珠");
 
     public static final ConfigBooleanHotkeyed AUTO_TOOL = new ConfigBooleanHotkeyed("自动工具", false, "", "挖掘方块时自动切换快捷栏内速度最快的工具");
     public static final ConfigBooleanHotkeyed AUTO_TOOL_INVENTORY = new ConfigBooleanHotkeyed("自动工具背包工具", false, "", "允许自动工具从背包临时换出合适工具");
@@ -99,6 +100,7 @@ public class Configs implements IConfigHandler {
             FREECAM,
             HAO_QI_CHONG_TIAN,
             NO_SLOW,
+            NO_TELEPORT,
             GHOST_HAND,
             CONTAINER_ESP,
             BLOCK_ESP,
@@ -125,6 +127,7 @@ public class Configs implements IConfigHandler {
         list.add(FREECAM_RENDER_HANDS);
         list.add(HAO_QI_CHONG_TIAN);
         list.add(NO_SLOW);
+        list.add(NO_TELEPORT);
         list.add(AUTO_TOOL);
         list.add(AUTO_TOOL_INVENTORY);
         list.add(AUTO_TOOL_SWITCH_BACK);
