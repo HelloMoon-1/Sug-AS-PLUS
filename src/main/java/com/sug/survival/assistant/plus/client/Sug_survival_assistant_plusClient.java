@@ -4,6 +4,7 @@ import com.sug.survival.assistant.plus.feature.*;
 import fi.dy.masa.malilib.config.ConfigManager;
 import fi.dy.masa.malilib.event.InputEventHandler;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.sug.survival.assistant.plus.config.Configs;
 import com.sug.survival.assistant.plus.config.HotkeysCallback;
 import com.sug.survival.assistant.plus.config.InputHandler;
+import com.sug.survival.assistant.plus.config.OneConfigBridge;
 
 public class Sug_survival_assistant_plusClient implements ClientModInitializer {
     public static final String MOD_ID = "sug_survival_assistant_plus";
@@ -25,6 +27,9 @@ public class Sug_survival_assistant_plusClient implements ClientModInitializer {
         ConfigManager.getInstance().registerConfigHandler(MOD_ID, Configs.INSTANCE);
         InputEventHandler.getKeybindManager().registerKeybindProvider(InputHandler.getInstance());
         InputEventHandler.getInputManager().registerKeyboardInputHandler(InputHandler.getInstance());
+        // malilib always; OneConfig ClickGUI only when its jars are present in run/mods
+        OneConfigBridge.init();
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> OneConfigBridge.flush());
 //        EspRenderer.init();
         PearlTrajectoryRenderer.init();
         NametagRenderer.init();
@@ -35,6 +40,9 @@ public class Sug_survival_assistant_plusClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             ticks++;
             ShulkerRestock.tick(client);
+            OneConfigBridge.tick();
+            FireworkWarningHud.tick(client);
+            PearlTrajectoryRenderer.tick(client);
             SilentUseHotkeys.tick(client);
             NoTeleport.tick(client);
             Freecam.tick(client);

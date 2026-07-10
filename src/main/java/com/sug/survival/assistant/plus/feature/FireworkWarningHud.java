@@ -12,6 +12,12 @@ import com.sug.survival.assistant.plus.client.Sug_survival_assistant_plusClient;
 import com.sug.survival.assistant.plus.config.Configs;
 
 public final class FireworkWarningHud {
+    private static int fireworkCount;
+    private static int inventoryTotemCount;
+    private static int shulkerTotemCount;
+    private static int updateTicks;
+    private static boolean cacheValid;
+
     private FireworkWarningHud() {
     }
 
@@ -23,27 +29,43 @@ public final class FireworkWarningHud {
         );
     }
 
+    public static void tick(Minecraft client) {
+        if (client.player == null || client.level == null) {
+            cacheValid = false;
+            updateTicks = 0;
+            return;
+        }
+        if (cacheValid && ++updateTicks < 5) return;
+        updateTicks = 0;
+        fireworkCount = Configs.FIREWORK_WARNING.getBooleanValue() ? countInventoryItems(client, Items.FIREWORK_ROCKET) : 0;
+        if (Configs.TOTEM_WARNING.getBooleanValue()) {
+            inventoryTotemCount = countInventoryItems(client, Items.TOTEM_OF_UNDYING);
+            shulkerTotemCount = ShulkerRestock.countInShulkers(client, Items.TOTEM_OF_UNDYING);
+        } else {
+            inventoryTotemCount = 0;
+            shulkerTotemCount = 0;
+        }
+        cacheValid = true;
+    }
+
     private static void render(GuiGraphicsExtractor context) {
         Minecraft client = Minecraft.getInstance();
-        if (client.player == null) return;
+        if (client.player == null || !cacheValid) return;
 
         int y = context.guiHeight() - 68;
         if (Configs.FIREWORK_WARNING.getBooleanValue()) {
-            int count = countInventoryItems(client, Items.FIREWORK_ROCKET);
             int threshold = Configs.FIREWORK_WARNING_THRESHOLD.getIntegerValue();
-            if (count <= threshold) {
-                drawCentered(context, client, Component.literal("烟花: " + count + " / " + threshold), y, 0xFFFF5555);
+            if (fireworkCount <= threshold) {
+                drawCentered(context, client, Component.literal("烟花: " + fireworkCount + " / " + threshold), y, 0xFFFF5555);
                 y -= 10;
             }
         }
 
         if (Configs.TOTEM_WARNING.getBooleanValue()) {
-            int inventoryCount = countInventoryItems(client, Items.TOTEM_OF_UNDYING);
-            int shulkerCount = ShulkerRestock.countInShulkers(client, Items.TOTEM_OF_UNDYING);
-            int total = inventoryCount + shulkerCount;
+            int total = inventoryTotemCount + shulkerTotemCount;
             int threshold = Configs.TOTEM_WARNING_THRESHOLD.getIntegerValue();
             if (total <= threshold) {
-                drawCentered(context, client, Component.literal("请及时补充图腾: " + total + " / " + threshold + "（背包 " + inventoryCount + "，盒子 " + shulkerCount + "）"), y, 0xFFFF5555);
+                drawCentered(context, client, Component.literal("请及时补充图腾: " + total + " / " + threshold + "（背包 " + inventoryTotemCount + "，盒子 " + shulkerTotemCount + "）"), y, 0xFFFF5555);
             }
         }
     }

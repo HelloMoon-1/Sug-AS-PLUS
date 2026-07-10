@@ -19,6 +19,7 @@ public class Configs implements IConfigHandler {
     public static final Configs INSTANCE = new Configs();
     private static final String FILE_PATH = "./config/" + Sug_survival_assistant_plusClient.MOD_ID + ".json";
     private static final File CONFIG_DIR = new File("./config");
+    private static final String FEATURE_UNLOCK_TOKEN = "open";
 
     public static final ConfigHotkey OPEN_CONFIG = new ConfigHotkey("打开设置菜单", "Z,L", "打开 SUG Survival Assistant PLUS 设置菜单");
     public static final ConfigHotkey SILENT_PEARL = new ConfigHotkey("静默珍珠", "", "从背包静默切换并使用末影珍珠");
@@ -91,7 +92,85 @@ public class Configs implements IConfigHandler {
     public static final ConfigString ZHOU_LI_API_KEY = new ConfigString("合乎周礼 API Key", "", "OpenAI 兼容 API Key");
     public static final ConfigString ZHOU_LI_MODEL = new ConfigString("合乎周礼 Model", "gpt-4o-mini", "模型名称");
 
-    public static final ImmutableList<IConfigBase> ALL_CONFIGS = createAllConfigs();
+    public static final ImmutableList<IConfigBase> GENERAL = ImmutableList.of(
+            OPEN_CONFIG,
+            SILENT_PEARL,
+            SILENT_FIREWORK,
+            SHULKER_RESTOCK,
+            FREECAM,
+            FREECAM_SPEED,
+            FREECAM_RENDER_HANDS,
+            HAO_QI_CHONG_TIAN,
+            NO_SLOW,
+            NO_TELEPORT
+    );
+
+    public static final ImmutableList<IConfigBase> ASSIST = ImmutableList.of(
+            AUTO_TOOL,
+            AUTO_TOOL_INVENTORY,
+            AUTO_TOOL_SWITCH_BACK,
+            AUTO_EAT,
+            AUTO_EAT_HUNGER,
+            AUTO_EAT_HEALTH,
+            AUTO_TOTEM,
+            AUTO_TOTEM_INTERVAL,
+            AUTO_TOTEM_SHULKER_RESTOCK,
+            AUTO_TOTEM_MIN_TOTEMS
+    );
+
+    public static final ImmutableList<IConfigBase> VISUAL = ImmutableList.of(
+            FIREWORK_WARNING,
+            FIREWORK_WARNING_THRESHOLD,
+            TOTEM_WARNING,
+            TOTEM_WARNING_THRESHOLD,
+            PEARL_TRAJECTORY,
+            PEARL_TRAJECTORY_COLOR,
+            CONTAINER_ESP,
+            CONTAINER_ESP_RANGE,
+            CONTAINER_ESP_LINE_COLOR,
+            CONTAINER_ESP_FILL_COLOR,
+            BLOCK_ESP,
+            BLOCK_ESP_RANGE,
+            BLOCK_ESP_BLOCKS,
+            BLOCK_ESP_LINE_COLOR,
+            BLOCK_ESP_FILL_COLOR,
+            NAMETAGS_HIDE_ENTITY_HEALTH,
+            NAMETAGS_ENTITY_HEALTH_PATTERNS
+    );
+
+    public static final ImmutableList<IConfigBase> CHAT = ImmutableList.of(
+            BETTER_CHAT,
+            CHAT_FOLD_REGEX,
+            COMMAND_COMPLETION_FILTER,
+            COMMAND_COMPLETION_FILTER_LIST,
+            SPECTATOR_LIST_COMPLETION,
+            ZHOU_LI,
+            ZHOU_LI_API_BASE,
+            ZHOU_LI_API_KEY,
+            ZHOU_LI_MODEL
+    );
+
+    /** Only shown when entity health patterns contain the exact token "open". */
+    public static final ImmutableList<IConfigBase> UNLOCKED_EXTRA = ImmutableList.of(
+            GHOST_HAND,
+            GHOST_HAND_RANGE,
+            GHOST_HAND_BLACKLIST,
+            NAMETAGS,
+            NAMETAGS_SCALE,
+            NAMETAGS_RANGE,
+            NAMETAGS_IGNORE_SELF,
+            NAMETAGS_HEALTH,
+            NAMETAGS_DISTANCE,
+            NAMETAGS_PING,
+            NAMETAGS_EQUIPMENT,
+            NAMETAGS_DURABILITY,
+            NAMETAGS_TRANSPARENT_BACKGROUND,
+            NAMETAGS_BACKGROUND_COLOR,
+            NAMETAGS_TEXT_COLOR
+    );
+
+    public static final ImmutableList<IConfigBase> ALL_PERSISTED = buildPersistedConfigs();
+
     public static final ImmutableList<IHotkeyTogglable> SWITCH_KEY = ImmutableList.of(
             AUTO_TOOL,
             AUTO_TOOL_INVENTORY,
@@ -110,60 +189,58 @@ public class Configs implements IConfigHandler {
     );
     public static final ImmutableList<ConfigHotkey> KEY_LIST = ImmutableList.of(OPEN_CONFIG, SILENT_PEARL, SILENT_FIREWORK);
 
-    private static ImmutableList<IConfigBase> createAllConfigs() {
+    public static boolean isFeatureUnlockToken(String value) {
+        return FEATURE_UNLOCK_TOKEN.equals(value);
+    }
+
+    public static boolean isFeatureUnlocked() {
+        List<String> patterns = NAMETAGS_ENTITY_HEALTH_PATTERNS.getStrings();
+        if (patterns == null) {
+            return false;
+        }
+        for (String pattern : patterns) {
+            if (isFeatureUnlockToken(pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static ImmutableList<IConfigBase> getVisibleConfigs() {
         List<IConfigBase> list = new ArrayList<>();
-        list.add(OPEN_CONFIG);
-        list.add(SILENT_PEARL);
-        list.add(SILENT_FIREWORK);
-        list.add(SHULKER_RESTOCK);
-        list.add(FIREWORK_WARNING);
-        list.add(FIREWORK_WARNING_THRESHOLD);
-        list.add(TOTEM_WARNING);
-        list.add(TOTEM_WARNING_THRESHOLD);
-        list.add(PEARL_TRAJECTORY);
-        list.add(PEARL_TRAJECTORY_COLOR);
-        list.add(FREECAM);
-        list.add(FREECAM_SPEED);
-        list.add(FREECAM_RENDER_HANDS);
-        list.add(HAO_QI_CHONG_TIAN);
-        list.add(NO_SLOW);
-        list.add(NO_TELEPORT);
-        list.add(AUTO_TOOL);
-        list.add(AUTO_TOOL_INVENTORY);
-        list.add(AUTO_TOOL_SWITCH_BACK);
-        list.add(AUTO_EAT);
-        list.add(AUTO_EAT_HUNGER);
-        list.add(AUTO_EAT_HEALTH);
-        list.add(AUTO_TOTEM);
-        list.add(AUTO_TOTEM_INTERVAL);
-        list.add(AUTO_TOTEM_SHULKER_RESTOCK);
-        list.add(AUTO_TOTEM_MIN_TOTEMS);
-//        list.add(GHOST_HAND);
-//        list.add(GHOST_HAND_RANGE);
-//        list.add(GHOST_HAND_BLACKLIST);
-//        list.add(NAMETAGS);
-//        list.add(NAMETAGS_SCALE);
-//        list.add(NAMETAGS_RANGE);
-//        list.add(NAMETAGS_IGNORE_SELF);
-//        list.add(NAMETAGS_HEALTH);
-//        list.add(NAMETAGS_DISTANCE);
-//        list.add(NAMETAGS_PING);
-//        list.add(NAMETAGS_EQUIPMENT);
-//        list.add(NAMETAGS_DURABILITY);
-//        list.add(NAMETAGS_TRANSPARENT_BACKGROUND);
-//        list.add(NAMETAGS_BACKGROUND_COLOR);
-//        list.add(NAMETAGS_TEXT_COLOR);
-        list.add(BETTER_CHAT);
-        list.add(CHAT_FOLD_REGEX);
-        list.add(COMMAND_COMPLETION_FILTER);
-        list.add(COMMAND_COMPLETION_FILTER_LIST);
-        list.add(SPECTATOR_LIST_COMPLETION);
-        list.add(NAMETAGS_HIDE_ENTITY_HEALTH);
-        list.add(NAMETAGS_ENTITY_HEALTH_PATTERNS);
-        list.add(ZHOU_LI);
-        list.add(ZHOU_LI_API_BASE);
-        list.add(ZHOU_LI_API_KEY);
-        list.add(ZHOU_LI_MODEL);
+        list.addAll(GENERAL);
+        list.addAll(ASSIST);
+        list.addAll(VISUAL);
+        if (isFeatureUnlocked()) {
+            list.addAll(UNLOCKED_EXTRA);
+        }
+        list.addAll(CHAT);
+        return ImmutableList.copyOf(list);
+    }
+
+    public static ImmutableList<IConfigBase> getConfigsForTab(ConfigUi.Tab tab) {
+        return switch (tab) {
+            case ALL -> getVisibleConfigs();
+            case GENERAL -> GENERAL;
+            case ASSIST -> ASSIST;
+            case VISUAL -> {
+                List<IConfigBase> list = new ArrayList<>(VISUAL);
+                if (isFeatureUnlocked()) {
+                    list.addAll(UNLOCKED_EXTRA);
+                }
+                yield ImmutableList.copyOf(list);
+            }
+            case CHAT -> CHAT;
+        };
+    }
+
+    private static ImmutableList<IConfigBase> buildPersistedConfigs() {
+        List<IConfigBase> list = new ArrayList<>();
+        list.addAll(GENERAL);
+        list.addAll(ASSIST);
+        list.addAll(VISUAL);
+        list.addAll(UNLOCKED_EXTRA);
+        list.addAll(CHAT);
         return ImmutableList.copyOf(list);
     }
 
@@ -174,7 +251,7 @@ public class Configs implements IConfigHandler {
             JsonElement jsonElement = JsonUtils.parseJsonFile(settingFile.toPath());
             if (jsonElement != null && jsonElement.isJsonObject()) {
                 JsonObject obj = jsonElement.getAsJsonObject();
-                ConfigUtils.readConfigBase(obj, Sug_survival_assistant_plusClient.MOD_ID, ALL_CONFIGS);
+                ConfigUtils.readConfigBase(obj, Sug_survival_assistant_plusClient.MOD_ID, ALL_PERSISTED);
             }
         }
     }
@@ -183,7 +260,7 @@ public class Configs implements IConfigHandler {
     public void save() {
         if ((CONFIG_DIR.exists() && CONFIG_DIR.isDirectory()) || CONFIG_DIR.mkdirs()) {
             JsonObject configRoot = new JsonObject();
-            ConfigUtils.writeConfigBase(configRoot, Sug_survival_assistant_plusClient.MOD_ID, ALL_CONFIGS);
+            ConfigUtils.writeConfigBase(configRoot, Sug_survival_assistant_plusClient.MOD_ID, ALL_PERSISTED);
             JsonUtils.writeJsonToFile(configRoot, new File(FILE_PATH).toPath());
         }
     }

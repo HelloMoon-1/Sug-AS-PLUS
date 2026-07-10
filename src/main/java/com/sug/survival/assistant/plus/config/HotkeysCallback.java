@@ -9,7 +9,9 @@ public class HotkeysCallback implements IHotkeyCallback {
     @Override
     public boolean onKeyAction(KeyAction action, IKeybind key) {
         if (key == Configs.OPEN_CONFIG.getKeybind()) {
-            Minecraft.getInstance().setScreen(new ConfigUi());
+            if (!OneConfigBridge.openGui()) {
+                Minecraft.getInstance().setScreen(new ConfigUi());
+            }
             return true;
         }
         return false;

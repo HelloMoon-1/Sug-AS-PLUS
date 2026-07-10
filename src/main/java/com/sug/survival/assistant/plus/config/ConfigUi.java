@@ -39,7 +39,7 @@ public class ConfigUi extends GuiConfigsBase {
 
     @Override
     public List<ConfigOptionWrapper> getConfigs() {
-        List<? extends IConfigBase> configs = Configs.ALL_CONFIGS;
+        List<? extends IConfigBase> configs = Configs.getConfigsForTab(tab);
         return ConfigOptionWrapper.createFor(configs);
     }
 
@@ -62,7 +62,11 @@ public class ConfigUi extends GuiConfigsBase {
     }
 
     public enum Tab {
-        ALL("所有");
+        ALL("全部"),
+        GENERAL("通用"),
+        ASSIST("辅助"),
+        VISUAL("视觉"),
+        CHAT("聊天");
 
         private final String translation;
 

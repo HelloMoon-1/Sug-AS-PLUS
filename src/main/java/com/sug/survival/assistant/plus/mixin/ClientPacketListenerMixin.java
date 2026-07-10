@@ -24,9 +24,12 @@ public abstract class ClientPacketListenerMixin {
         String original = message;
         ClientPacketListener self = (ClientPacketListener) (Object) this;
 
-        ZhouLi.rewriteAsync(original).thenAcceptAsync(rewritten -> {
-            self.sendChat(rewritten);
-            sug_survival_assistant_plus$zhouLiProcessing = false;
+        ZhouLi.rewriteAsync(original).whenCompleteAsync((rewritten, error) -> {
+            try {
+                self.sendChat(error == null && rewritten != null ? rewritten : original);
+            } finally {
+                sug_survival_assistant_plus$zhouLiProcessing = false;
+            }
         }, Minecraft.getInstance());
     }
 }

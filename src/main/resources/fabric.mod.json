@@ -7,7 +7,6 @@
   "authors": [],
   "contact": {},
   "license": "All-Rights-Reserved",
-  "icon": "assets/sug_survival_assistant_plus/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [

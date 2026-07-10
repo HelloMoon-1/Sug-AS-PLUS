@@ -7,15 +7,24 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
 import com.sug.survival.assistant.plus.config.Configs;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public final class BetterChat {
-    private static final Map<String, FoldedMessage> FOLDED_MESSAGES = new HashMap<>();
+    private static final int MAX_FOLDED_MESSAGES = 512;
+    private static final Map<String, FoldedMessage> FOLDED_MESSAGES = new LinkedHashMap<>(64, 0.75F, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, FoldedMessage> eldest) {
+            return size() > MAX_FOLDED_MESSAGES;
+        }
+    };
+    private static List<String> regexSource = List.of();
+    private static List<Pattern> regexPatterns = List.of();
 
     private BetterChat() {
     }
@@ -28,7 +37,7 @@ public final class BetterChat {
 
         FoldedMessage folded = FOLDED_MESSAGES.get(content);
         if (folded == null) {
-            FOLDED_MESSAGES.put(content, new FoldedMessage(message, 1));
+            FOLDED_MESSAGES.put(content, new FoldedMessage(1));
             return false;
         }
 
@@ -57,14 +66,28 @@ public final class BetterChat {
     }
 
     private static boolean isRegexFolded(String content) {
-        for (String regex : Configs.CHAT_FOLD_REGEX.getStrings()) {
+        refreshRegexPatterns();
+        for (Pattern pattern : regexPatterns) {
+            if (pattern.matcher(content).find()) return true;
+        }
+        return false;
+    }
+
+    private static void refreshRegexPatterns() {
+        List<String> configured = Configs.CHAT_FOLD_REGEX.getStrings();
+        List<String> current = configured == null ? List.of() : new ArrayList<>(configured);
+        if (current.equals(regexSource)) return;
+
+        List<Pattern> compiled = new ArrayList<>();
+        for (String regex : current) {
             if (regex == null || regex.isBlank()) continue;
             try {
-                if (Pattern.compile(regex).matcher(content).find()) return true;
+                compiled.add(Pattern.compile(regex));
             } catch (PatternSyntaxException ignored) {
             }
         }
-        return false;
+        regexSource = current;
+        regexPatterns = List.copyOf(compiled);
     }
 
     public interface Refresher {
@@ -72,11 +95,9 @@ public final class BetterChat {
     }
 
     private static final class FoldedMessage {
-        private final Component message;
         private int count;
 
-        private FoldedMessage(Component message, int count) {
-            this.message = message;
+        private FoldedMessage(int count) {
             this.count = count;
         }
     }

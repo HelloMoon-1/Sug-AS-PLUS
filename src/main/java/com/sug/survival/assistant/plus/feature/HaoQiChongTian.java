@@ -20,6 +20,9 @@ public final class HaoQiChongTian {
     private static final int SEGMENT_MILLIS = 5000;
     private static final Random RANDOM = new Random();
     private static final AtomicInteger PLAYBACK_TOKEN = new AtomicInteger();
+    private static final Object AUDIO_LOCK = new Object();
+    private static volatile CachedAudio cachedAudio;
+    private static volatile boolean audioLoadFailed;
 
     private static boolean frozen;
     private static int freezeTicks;
@@ -164,39 +167,63 @@ public final class HaoQiChongTian {
     }
 
     private static void playRandomSegment(int token) {
-        try (InputStream stream = openJHSound()) {
-            if (stream == null) return;
+        try {
+            CachedAudio cached = loadAudio();
+            if (cached == null) return;
 
-            byte[] resourceBytes = readAllBytes(stream);
-            try (AudioInputStream source = AudioSystem.getAudioInputStream(new ByteArrayInputStream(resourceBytes))) {
-                AudioFormat baseFormat = source.getFormat();
-                AudioFormat pcmFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16, baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
-                try (AudioInputStream pcm = AudioSystem.getAudioInputStream(pcmFormat, source)) {
-                    byte[] audio = readAllBytes(pcm);
-                    if (audio.length == 0) return;
+            byte[] audio = cached.bytes();
+            AudioFormat pcmFormat = cached.format();
+            int frameSize = pcmFormat.getFrameSize();
+            float speed = 0.9F + RANDOM.nextFloat() * 0.6F;
+            int sourceSegmentBytes = Math.min(audio.length, ((int) (pcmFormat.getFrameRate() * SEGMENT_MILLIS / 1000.0F * speed)) * frameSize);
+            int maxStart = Math.max(0, audio.length - sourceSegmentBytes);
+            int start = maxStart == 0 ? 0 : RANDOM.nextInt(maxStart / frameSize + 1) * frameSize;
+            AudioFormat playFormat = new AudioFormat(pcmFormat.getEncoding(), pcmFormat.getSampleRate() * speed, pcmFormat.getSampleSizeInBits(), pcmFormat.getChannels(), pcmFormat.getFrameSize(), pcmFormat.getFrameRate() * speed, pcmFormat.isBigEndian());
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, playFormat);
 
-                    int frameSize = pcmFormat.getFrameSize();
-                    float speed = 0.9F + RANDOM.nextFloat() * 0.6F;
-                    int sourceSegmentBytes = Math.min(audio.length, ((int) (pcmFormat.getFrameRate() * SEGMENT_MILLIS / 1000.0F * speed)) * frameSize);
-                    int maxStart = Math.max(0, audio.length - sourceSegmentBytes);
-                    int start = maxStart == 0 ? 0 : RANDOM.nextInt(maxStart / frameSize + 1) * frameSize;
-                    AudioFormat playFormat = new AudioFormat(pcmFormat.getEncoding(), pcmFormat.getSampleRate() * speed, pcmFormat.getSampleSizeInBits(), pcmFormat.getChannels(), pcmFormat.getFrameSize(), pcmFormat.getFrameRate() * speed, pcmFormat.isBigEndian());
-                    DataLine.Info info = new DataLine.Info(SourceDataLine.class, playFormat);
-
-                    try (SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info)) {
-                        line.open(playFormat);
-                        line.start();
-                        int end = start + sourceSegmentBytes;
-                        for (int offset = start; offset < end && PLAYBACK_TOKEN.get() == token; offset += 4096) {
-                            int length = Math.min(4096, end - offset);
-                            line.write(audio, offset, length);
-                        }
-                        if (PLAYBACK_TOKEN.get() == token) line.drain();
-                        line.stop();
-                    }
+            try (SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info)) {
+                line.open(playFormat);
+                line.start();
+                int end = start + sourceSegmentBytes;
+                for (int offset = start; offset < end && PLAYBACK_TOKEN.get() == token; offset += 4096) {
+                    int length = Math.min(4096, end - offset);
+                    line.write(audio, offset, length);
                 }
+                if (PLAYBACK_TOKEN.get() == token) line.drain();
+                line.stop();
             }
         } catch (Exception ignored) {
+        }
+    }
+
+    private static CachedAudio loadAudio() {
+        CachedAudio cached = cachedAudio;
+        if (cached != null || audioLoadFailed) return cached;
+        synchronized (AUDIO_LOCK) {
+            if (cachedAudio != null || audioLoadFailed) return cachedAudio;
+            try (InputStream stream = openJHSound()) {
+                if (stream == null) {
+                    audioLoadFailed = true;
+                    return null;
+                }
+                byte[] resourceBytes = readAllBytes(stream);
+                try (AudioInputStream source = AudioSystem.getAudioInputStream(new ByteArrayInputStream(resourceBytes))) {
+                    AudioFormat baseFormat = source.getFormat();
+                    AudioFormat pcmFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16, baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
+                    try (AudioInputStream pcm = AudioSystem.getAudioInputStream(pcmFormat, source)) {
+                        byte[] audio = readAllBytes(pcm);
+                        if (audio.length == 0) {
+                            audioLoadFailed = true;
+                            return null;
+                        }
+                        cachedAudio = new CachedAudio(audio, pcmFormat);
+                        return cachedAudio;
+                    }
+                }
+            } catch (Exception e) {
+                audioLoadFailed = true;
+                return null;
+            }
         }
     }
 
@@ -224,5 +251,8 @@ public final class HaoQiChongTian {
             out.write(buffer, 0, read);
         }
         return out.toByteArray();
+    }
+
+    private record CachedAudio(byte[] bytes, AudioFormat format) {
     }
 }

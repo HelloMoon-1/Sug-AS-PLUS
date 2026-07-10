@@ -13,12 +13,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 public final class ZhouLi {
     private static final Logger LOGGER = LoggerFactory.getLogger("ZhouLi");
-    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
+    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
     private static final String SYSTEM_PROMPT;
     private static final Random RANDOM = new Random();
 
@@ -91,13 +94,14 @@ public final class ZhouLi {
                     .uri(URI.create(endpoint))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + apiKey)
+                    .timeout(Duration.ofSeconds(15))
                     .POST(HttpRequest.BodyPublishers.ofString(body.toString(), StandardCharsets.UTF_8))
                     .build();
 
             HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() != 200) {
-                LOGGER.warn("ZhouLi API returned {}: {}", response.statusCode(), response.body());
+                LOGGER.warn("ZhouLi API returned {}: {}", response.statusCode(), truncate(response.body()));
                 return null;
             }
 
@@ -117,6 +121,11 @@ public final class ZhouLi {
         }
 
         return null;
+    }
+
+    private static String truncate(String value) {
+        if (value == null || value.length() <= 512) return value;
+        return value.substring(0, 512) + "...";
     }
 
     public static CompletableFuture<String> rewriteAsync(String original) {

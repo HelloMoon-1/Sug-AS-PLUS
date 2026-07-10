@@ -32,12 +32,32 @@ public final class PearlTrajectoryRenderer {
         LevelRenderEvents.AFTER_SOLID_FEATURES.register(PearlTrajectoryRenderer::render);
     }
 
+    public static void tick(Minecraft client) {
+        if (!Configs.PEARL_TRAJECTORY.getBooleanValue() || client.player == null || client.level == null) {
+            clearCache();
+            return;
+        }
+
+        boolean mainHandPearl = client.player.getMainHandItem().getItem() == Items.ENDER_PEARL;
+        boolean offhandPearl = client.player.getOffhandItem().getItem() == Items.ENDER_PEARL;
+        if (!mainHandPearl && !offhandPearl) {
+            clearCache();
+            return;
+        }
+
+        buildTrajectory(client);
+    }
+
+    private static void clearCache() {
+        pointCount = 0;
+        hitPos = null;
+    }
+
     private static void render(LevelRenderContext context) {
         Minecraft client = Minecraft.getInstance();
         if (!Configs.PEARL_TRAJECTORY.getBooleanValue() || client.player == null || client.level == null) return;
         if (client.player.getMainHandItem().getItem() != Items.ENDER_PEARL && client.player.getOffhandItem().getItem() != Items.ENDER_PEARL) return;
 
-        buildTrajectory(client);
         if (pointCount > 1) {
             renderTrajectory(context, Configs.PEARL_TRAJECTORY_COLOR.getColor());
         }
