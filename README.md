@@ -1,6 +1,6 @@
-# SUG Survival Assistant PLUS
+# Survival Assistant PLUS
 
-SUG Survival Assistant PLUS is a client-side Fabric utility mod for Minecraft 26.1.2. It ports and preserves the original assistant features while updating the project to the current Fabric, Yarn, malilib, and Mod Menu stack.
+Survival Assistant PLUS is a client-side Fabric utility mod for Minecraft 26.1.2. It ports and preserves the original assistant features while updating the project to the current Fabric, Yarn, malilib, and Mod Menu stack.
 
 ## Features
 
