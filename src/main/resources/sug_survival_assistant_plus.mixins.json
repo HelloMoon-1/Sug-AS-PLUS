@@ -1,0 +1,33 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.sug.survival.assistant.plus.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "CameraAccessor",
+    "CameraMixin",
+    "ChatHudMixin",
+    "ClientPacketListenerMixin",
+    "ClientPlayerEntityMixin",
+    "ClientPlayerInteractionManagerMixin",
+    "CommandSuggestionsMixin",
+    "EntityMixin",
+    "EntityRendererMixin",
+    "GameRendererMixin",
+    "GuiMixin",
+    "KeyBindingMixin",
+    "KeyboardInputMixin",
+    "MinecraftClientMixin",
+    "NoTeleportPortalCollisionMixin",
+    "NoTeleportUseItemMixin",
+    "PlayerEntityAccessor",
+    "SlimeBlockMixin",
+    "TeleportToPlayerMenuCategoryMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
